@@ -1,0 +1,81 @@
+\documentclass[notes]{subfiles}
+
+\begin{document}
+
+\setcounter{chapter}{0}
+\chapter{Introduction}
+\addtocounter{section}{1}
+\section{Photorealistic Rendering and the Ray-Tracing Algorithm}
+Our goal is to make a scene that is indistinguishable from real life. To achieve this, we use an accurate simulation of the physics of light. Motion of electrically charged particles creates an electric field. This electric field creates a magnetic field, which reinforces the electric field. This creates light. However, we don't have to try that hard. We instead mostly work via ray tracing.
+
+Many ray tracers trace rays from the camera back to a light source. They must check ray-object intersections. We also need to describe how light scatters at a surface. We also need to account for light transport. We also need to calculate how a light ray's path through media is affected by said media.
+
+\subsection{Cameras and Film}
+In a pinhole camera, light passes through a pinhole, and forms an image on film. This is useful for simulation. This creates a double pyramid shape.
+
+\begin{definition}[Viewing Volume]
+    A \emph{viewing volume} is a region of space that can be imaged onto a film.
+\end{definition}
+
+Pinholes are frequently referred to as an eye. Instead of casting a ray from a point on the film through the viewing volume, we can just cast a ray starting at the eye.
+
+\subsection{Ray-Object Intersections}
+\begin{definition}[Ray]
+    A \emph{ray} $r$ is a parametric map $r(t) = o + td$, $t \geq 0$, where $o$ is the \emph{origin} and $d$ is the \emph{direction}.
+\end{definition}
+
+Suppose we have a surface defined by an implicit equation $F(p) = 0$. It is then quite easy to find the intersection. We want to know if any points on a ray $r$ satisfy this implicit equation. Substitute $r(t)$ in for $p$. Then, solve for $t$ to find the intersection points.
+
+\begin{exercise}
+    Suppose a circle is defined by $x^2 + y^2 - 1 = 0$. If $r$ is a ray, find all intersections of $r$ with the circle.
+\end{exercise}
+\begin{solution}
+    Let $r(t) = (o_x, o_y) + t(d_x, d_y)$. Substituting $r(t)$ in for $(x, y)$ gives us
+    \begin{align*}
+        & (o_x + td_x)^2 + (o_y + td_y)^2 - 1 = 0 \\
+        & o_x^2 + 2o_x d_x t + d_x^2 t^2 + o_y^2 + 2o_y d_y t + d_y^2 t^2 - 1 = 0 \\
+        & (d_x^2 + d_y^2) t^2 + (2o_x d_x + 2o_y d_y)t + o_x^2 + o_y^2 - 1 = 0
+        \text{.}
+    \end{align*}
+    We can use the quadratic formula to find solutions for $t \geq 0$ that give us points $r(t_i)$ that intersect with the circle.
+\end{solution}
+
+However, we also need information about the surface at the intersection point, such as a surface normal.
+
+The usage of acceleration structures let us get to $\O(m \log n)$ time complexity for ray intersection testing, where $m$ is the number of pixels and $n$ is the number of objects in the scene (think of the objects in a BVH, which can be traversed in $\O(\log n)$ time). However, building acceleration structures is $\Omega(n)$.
+
+\subsection{Light Distribution}
+Ray-object intersections give us local information around the intersection point. We need to figure out how much light is leaving this point in the direction of the camera. Thus, we need to know how much light is coming in to this point. While point lights are easy to work with, they do not exist in the real world, so we use area light sources. That is, a light source that comes from the surface of an object.
+
+Suppose we have a point light source with a power $\Phi$. Then, the power per unit area on a unit sphere around the light is $\Phi/(4\pi)$. If we increase the radius of the sphere, then the power per unit area decreases.
+
+\begin{definition}[Differential Irradiance]
+    Suppose $\Phi$ is the power of a point light, $r$ is the distance between the light and the intersection, and $\theta$ is the angle between the normal and the intersection to light vector. Then, the \emph{differential irradiance} at a point $p$ is
+    \[
+        dE = \frac{\Phi \cos \theta}{4\pi r^2}
+        \text{.}
+    \]
+\end{definition}
+
+Two important laws are encoded in this: Lambertian diffuse ($\cos\theta$ falloff) and the inverse square law.
+
+Importantly, illumination is linear. That is, we can sum together all different contributions of light sources to get the total illumination.
+
+\subsection{Visibility}
+However, notice that we did not account for obstruction of light rays. A light contributes illumination to a point if and only if the ray is unobstructed.
+
+To check this, we construct rays called shadow rays between the intersection point and the light source. If no objects intersect with this ray, then we add the light's contribution to the point.
+
+\subsection{Light Scattering at Surfaces}
+We now want to find how much light is scattered back in the direction of the eye. To describe this, we use a BRDF.
+
+\begin{definition}[Bidirectional Reflectance Distribution Function]
+    A \emph{bidirectional reflectance distribution function} (BRDF) is a smooth scalar function $f_r(p, \omega_o, \omega_i)$, where $|\omega_o| = |\omega_i| = 1$, such that it is symmetric with respect to swapping $\omega_o$ and $\omega_i$.
+\end{definition}
+
+There are more complicated versions, but they are all similar.
+
+\subsection{Indirect Light Transport}
+Whitted ray tracing allows for easy reflections and transparency.
+
+\end{document}
