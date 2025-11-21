@@ -49,13 +49,13 @@ Ray-object intersections give us local information around the intersection point
 
 Suppose we have a point light source with a power $\Phi$. Then, the power per unit area on a unit sphere around the light is $\Phi/(4\pi)$. If we increase the radius of the sphere, then the power per unit area decreases.
 
-\begin{definition}[Differential Irradiance]
-    Suppose $\Phi$ is the power of a point light, $r$ is the distance between the light and the intersection, and $\theta$ is the angle between the normal and the intersection to light vector. Then, the \emph{differential irradiance} at a point $p$ is
+\begin{proposition}[Differential Irradiance]
+    Suppose $\Phi$ is the power of a point light, $r$ is the distance between the light and the intersection, and $\theta$ is the angle between the normal and the intersection to light vector. Then, the differential irradiance at a point $p$ is
     \[
         dE = \frac{\Phi \cos \theta}{4\pi r^2}
         \text{.}
     \]
-\end{definition}
+\end{proposition}
 
 Two important laws are encoded in this: Lambertian diffuse ($\cos\theta$ falloff) and the inverse square law.
 
@@ -76,6 +76,28 @@ We now want to find how much light is scattered back in the direction of the eye
 There are more complicated versions, but they are all similar.
 
 \subsection{Indirect Light Transport}
-Whitted ray tracing allows for easy reflections and transparency.
+Whitted ray tracing allows for easy reflections and transparency. However, this does not allow for accurate light scattering. The amount of light that reaches a camera is the amount of emitted light plus the amount of reflected light.
+
+\begin{theorem}[Light Transport Equation]
+    The light transport equation says that the radiance of the outgoing light, $L_o(p, \omega_o)$, equals the emitted light $L_e(p, \omega_o)$ plus the sum over all possible incoming radiances, $L_i(p, \omega_i)$.
+    \[
+        L_o(p, \omega_o) = L_e(p, \omega_o) + \int_{S^2} f(p, \omega_o, \omega_i) L_i(p, \omega_i)|{\cos\theta_i}|d\omega_i
+        \text{,}
+    \]
+    where $f$ is a bidirectional distribution function.
+\end{theorem}
+
+In general, it is not possible to analytically solve this integral, so we use simplifying assumptions or numerical integration techniques. In Whitted ray tracing the integral becomes just $\sum L_i(p, \omega_i)$ for a discrete set of directions $\{ \omega_i \}$.
+
+\subsection{Ray Propagation}
+\begin{definition}[Participating Medium]
+    A medium is \emph{participating} if it effects how light travels through it.
+\end{definition}
+
+Earth's atmosphere causes farther away objects to appear less saturated.
+
+There are two ways a medium can participate in light propagation. FIrst, it can extinguish/attenuate light, by absorption or scattering. This can be specified with a transmittance $T$.
+
+Participating media emitting light or scattering back needs the volume light transport equation.
 
 \end{document}
